@@ -54,18 +54,29 @@ def process_excel_files(directory, output_file="Consolidado_Comentarios.xlsx"):
             question_texts = df.iloc[0]
             comment_cols = []
             
+            keywords = ['comente', 'comentário', 'comentario', 'describe', 'descreva', 'ponto', 'fraco', 'forte']
+            
             for col in df.columns:
                 col_name_lower = str(col).lower()
                 first_row_val_lower = str(question_texts[col]).lower()
                 
-                if 'comente' in col_name_lower or 'comente' in first_row_val_lower:
+                is_comment = any(kw in col_name_lower or kw in first_row_val_lower for kw in keywords)
+                
+                if is_comment:
                     comment_cols.append(col)
             
             if comment_cols:
-                # Dados reais começam após a linha de texto da pergunta e a linha de Import ID (se existir)
-                # Na maioria dos exports Excel: Row 0=IDs, Row 1=Text, Row 2=ImportID, Row 3+=Data
-                # df.iloc[0] é Row 1. df.iloc[1] é Row 2. df.iloc[2:] é Row 3+.
-                data_df = df.iloc[2:].copy()
+                # Tenta identificar onde começam os dados reais
+                # Row 0=IDs (headers), Row 1=Text (index 0), Row 2=ImportID (index 1) OU Data (index 1)
+                data_start_idx = 1
+                if len(df) > 1:
+                    # Verifica se a linha index 1 parece ser metadados (ImportID)
+                    # Geralmente começa com {"ImportID":...
+                    val_check = str(df.iloc[1, 0])
+                    if '{"importid"' in val_check.lower():
+                        data_start_idx = 2
+                
+                data_df = df.iloc[data_start_idx:].copy()
                 
                 form_name = os.path.basename(file).split("_")[0] # Pega a primeira parte do nome do arquivo
                 
