@@ -59,7 +59,7 @@ def process_excel_files(directory, output_file="Consolidado_Comentarios.xlsx"):
                 data_df = df.iloc[data_start_idx:].copy()
                 
                 # Pega o nome do formulário (primeira parte do nome do arquivo)
-                form_name = os.path.basename(file).split("_")[0]
+                form_name = os.path.basename(file)
                 
                 rows_with_comments = 0
                 for _, row in data_df.iterrows():
